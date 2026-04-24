@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap");
+
+:root {
+  --bg-primary: #f2f5fa;
+  --bg-surface: #ffffff;
+  --bg-surface-soft: #f8fbff;
+  --text-primary: #10233f;
+  --text-secondary: #4f647f;
+  --line-color: #d6deeb;
+  --brand-600: #0b5ecf;
+  --brand-500: #1f78f2;
+  --success-500: #1d8a5f;
+  --warning-500: #ca7d10;
+  --danger-500: #b23a3f;
+  --shadow-soft: 0 12px 30px rgba(12, 35, 63, 0.08);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Noto Sans SC", "Plus Jakarta Sans", sans-serif;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 4% 8%, rgba(11, 94, 207, 0.1), transparent 28%),
+    radial-gradient(circle at 94% 18%, rgba(31, 120, 242, 0.12), transparent 34%),
+    linear-gradient(180deg, #f7faff 0%, #edf3fa 100%);
+}
+
+.app-card {
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  border: 1px solid var(--line-color);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.page-title {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", "Noto Sans SC", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.page-subtitle {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.grid-two {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1.3fr 1fr;
+}
+
+.mono-id {
+  font-family: "Consolas", "Menlo", monospace;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .grid-two {
+    grid-template-columns: 1fr;
+  }
+}

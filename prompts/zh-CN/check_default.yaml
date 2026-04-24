@@ -1,0 +1,11 @@
+group: check
+name: default
+version: "1.0.0"
+variables:
+  - text
+instruction: |
+  检测层统一返回 score/label/raw 字段：
+  - score: 0-100，分数越低代表越接近人工写作
+  - label: ai_like | human_like | uncertain
+  - raw: 第三方原始返回
+

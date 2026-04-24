@@ -1,0 +1,14 @@
+group: style
+name: deai_external
+version: "1.0.0"
+variables:
+  - text
+instruction: |
+  采用“保真改写 + 反模板硬约束”模式：
+  - 不增删核心事实、结论与论证链，只做表达层优化；
+  - 去除明显AI路标表达、客服腔、教学腔；
+  - 优先使用自然中文句式，避免机械化“不是A而是B”骨架；
+  - 控制抽象套话与口号化词语，保持正式可读；
+  - 输出只给正文，不要附加解释或元说明。
+  若加载到外部规则仓库（De-AI-Prompt-Enhancer-Writer-Booster-SKILL），按外部规则优先执行。
+
