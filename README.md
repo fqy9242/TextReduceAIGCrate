@@ -47,7 +47,7 @@
 - 达标规则：任一轮 `score <= target_score` 立即成功
 - 未达标规则：达到最大轮次返回最低分版本并标记 `not_met`
 - 检测适配器：`MockDetector`（默认）/ `HttpDetector`（可替换第三方）
-- Prompt YAML 热重载（管理员）
+- Prompt YAML 在线管理（管理员可在系统内查看/编辑/保存/热重载）
 
 ## 快速开始
 
@@ -99,6 +99,8 @@ Copy-Item frontend\.env.example frontend\.env
 - `POST /api/v1/users`
 - `PATCH /api/v1/users/{id}/role`
 - `GET /api/v1/prompts/metadata`
+- `GET /api/v1/prompts/{group}/{name}`
+- `PUT /api/v1/prompts/{group}/{name}`
 - `POST /api/v1/prompts/reload`
 
 ## 测试

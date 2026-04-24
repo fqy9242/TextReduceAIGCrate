@@ -1,20 +1,33 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap");
 
 :root {
-  --bg-primary: #f2f5fa;
+  --bg-page: #f3f6fb;
   --bg-surface: #ffffff;
   --bg-surface-soft: #f8fbff;
-  --text-primary: #10233f;
-  --text-secondary: #4f647f;
-  --line-color: #d6deeb;
-  --brand-600: #0b5ecf;
-  --brand-500: #1f78f2;
-  --success-500: #1d8a5f;
-  --warning-500: #ca7d10;
-  --danger-500: #b23a3f;
-  --shadow-soft: 0 12px 30px rgba(12, 35, 63, 0.08);
-  --radius-lg: 18px;
-  --radius-md: 12px;
+  --text-primary: #14263f;
+  --text-secondary: #667c99;
+  --line-color: #e0e7f1;
+  --brand-700: #1458c4;
+  --brand-600: #1677ff;
+  --brand-500: #4096ff;
+  --shadow-card: 0 8px 24px rgba(22, 45, 80, 0.08);
+  --shadow-soft: 0 3px 10px rgba(22, 45, 80, 0.06);
+  --radius-lg: 10px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+
+  --el-color-primary: var(--brand-600);
+  --el-color-primary-light-3: #5ca4ff;
+  --el-color-primary-light-5: #8bc0ff;
+  --el-color-primary-light-7: #b3d5ff;
+  --el-color-primary-light-8: #c9e2ff;
+  --el-color-primary-light-9: #e9f3ff;
+  --el-color-primary-dark-2: #115fcf;
+  --el-bg-color-page: var(--bg-page);
+  --el-border-radius-base: var(--radius-sm);
+  --el-border-radius-small: 4px;
+  --el-border-color: var(--line-color);
+  --el-font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -26,55 +39,133 @@ body,
 #app {
   margin: 0;
   min-height: 100%;
-  font-family: "Noto Sans SC", "Plus Jakarta Sans", sans-serif;
   color: var(--text-primary);
-  background:
-    radial-gradient(circle at 4% 8%, rgba(11, 94, 207, 0.1), transparent 28%),
-    radial-gradient(circle at 94% 18%, rgba(31, 120, 242, 0.12), transparent 34%),
-    linear-gradient(180deg, #f7faff 0%, #edf3fa 100%);
+  font-family: var(--el-font-family);
+  background: var(--bg-page);
+}
+
+body {
+  background-image:
+    linear-gradient(0deg, rgba(20, 88, 196, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 88, 196, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+section {
+  min-width: 0;
 }
 
 .app-card {
   border-radius: var(--radius-lg);
   background: var(--bg-surface);
   border: 1px solid var(--line-color);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-card);
 }
 
 .page-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .page-title {
   margin: 0;
-  font-family: "Plus Jakarta Sans", "Noto Sans SC", sans-serif;
-  font-size: 22px;
+  font-size: 20px;
+  line-height: 1.2;
   font-weight: 700;
   letter-spacing: 0.2px;
+  color: #182d4a;
 }
 
 .page-subtitle {
   margin: 4px 0 0;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .grid-two {
   display: grid;
-  gap: 16px;
-  grid-template-columns: 1.3fr 1fr;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
 }
 
 .mono-id {
-  font-family: "Consolas", "Menlo", monospace;
+  font-family: "Consolas", "Menlo", "Courier New", monospace;
   font-size: 12px;
+  color: #2f4664;
+}
+
+.el-table {
+  --el-table-header-bg-color: #f8fbff;
+  --el-table-tr-bg-color: #ffffff;
+  --el-table-border-color: #e2e9f3;
+  --el-table-row-hover-bg-color: #f2f8ff;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.el-table th.el-table__cell {
+  color: #3d4e66;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.el-table td.el-table__cell {
+  color: #2f425c;
+}
+
+.el-form-item__label {
+  color: #3c4f69;
+  font-weight: 600;
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-input-number,
+.el-select__wrapper {
+  box-shadow: none !important;
+  border: 1px solid #d8e2ef;
+  border-radius: var(--radius-sm);
+}
+
+.el-input__wrapper:hover,
+.el-select__wrapper:hover,
+.el-textarea__inner:hover {
+  border-color: #b7c8e2;
+}
+
+.el-button {
+  font-weight: 600;
+}
+
+.el-button--primary.is-plain {
+  border-color: #bad7ff;
+  color: var(--brand-700);
+  background: #eef6ff;
+}
+
+.el-pagination {
+  --el-pagination-button-bg-color: #fff;
+  --el-pagination-hover-color: var(--brand-600);
+}
+
+.el-descriptions {
+  --el-descriptions-item-bordered-label-background: #f8fbff;
+}
+
+.el-tag {
+  border-radius: 999px;
 }
 
 @media (max-width: 900px) {
   .grid-two {
     grid-template-columns: 1fr;
+  }
+
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from threading import RLock
+from typing import Any
 
 import yaml
 
@@ -74,3 +75,78 @@ class PromptManager:
         with self._lock:
             return list(self._prompts.values())
 
+    def update_prompt(
+        self,
+        *,
+        group: str,
+        name: str,
+        version: str,
+        variables: list[str],
+        system: str,
+        human: str,
+        instruction: str,
+    ) -> None:
+        prompt = self.get_prompt(group, name)
+        prompt_path = self._resolve_prompt_path(prompt.file_path)
+        backup_content = prompt_path.read_text(encoding="utf-8")
+
+        cleaned_version = version.strip()
+        cleaned_variables = self._normalize_variables(variables)
+        cleaned_system = system.strip()
+        cleaned_human = human.strip()
+        cleaned_instruction = instruction.strip()
+
+        if not cleaned_version:
+            raise ValueError("Prompt version cannot be empty")
+
+        updated: dict[str, Any] = {
+            "group": group,
+            "name": name,
+            "version": cleaned_version,
+            "variables": cleaned_variables,
+        }
+
+        if group == "rewrite":
+            if not cleaned_system or not cleaned_human:
+                raise ValueError("Rewrite prompt requires non-empty system and human")
+            updated["system"] = cleaned_system
+            updated["human"] = cleaned_human
+            if cleaned_instruction:
+                updated["instruction"] = cleaned_instruction
+        else:
+            if not cleaned_instruction:
+                raise ValueError(f"{group} prompt requires non-empty instruction")
+            updated["instruction"] = cleaned_instruction
+
+        serialized = yaml.safe_dump(updated, allow_unicode=True, sort_keys=False)
+        if not serialized.endswith("\n"):
+            serialized += "\n"
+
+        prompt_path.write_text(serialized, encoding="utf-8")
+        try:
+            self.reload()
+        except Exception:
+            prompt_path.write_text(backup_content, encoding="utf-8")
+            self.reload()
+            raise
+
+    @staticmethod
+    def _normalize_variables(items: list[str]) -> list[str]:
+        normalized: list[str] = []
+        seen: set[str] = set()
+        for item in items:
+            value = str(item).strip()
+            if not value or value in seen:
+                continue
+            normalized.append(value)
+            seen.add(value)
+        return normalized
+
+    def _resolve_prompt_path(self, file_path: str) -> Path:
+        root = self.prompts_root.resolve()
+        path = Path(file_path).resolve()
+        try:
+            path.relative_to(root)
+        except ValueError as exc:
+            raise ValueError("Prompt file path is outside prompts root") from exc
+        return path

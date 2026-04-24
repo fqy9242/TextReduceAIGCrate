@@ -66,3 +66,9 @@ export interface PromptMeta {
   variables: string[];
   file_path: string;
 }
+
+export interface PromptDetail extends PromptMeta {
+  system: string;
+  human: string;
+  instruction: string;
+}

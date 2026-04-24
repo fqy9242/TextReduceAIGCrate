@@ -59,12 +59,23 @@ function openTaskDetail() {
 
 <template>
   <section>
-    <div class="page-heading">
-      <div>
-        <h2 class="page-title">改写工作台</h2>
-        <p class="page-subtitle">提交文本后系统自动执行改写-检测-决策闭环</p>
-      </div>
+    <div class="page-actions">
       <el-button type="primary" :disabled="!latestTaskId" @click="openTaskDetail">查看最新任务</el-button>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span>策略模式</span>
+        <strong>deai_external</strong>
+      </div>
+      <div class="kpi-card">
+        <span>目标阈值</span>
+        <strong>{{ form.target_score }}%</strong>
+      </div>
+      <div class="kpi-card">
+        <span>最大轮次</span>
+        <strong>{{ form.max_rounds }} 轮</strong>
+      </div>
     </div>
 
     <div class="grid-two">
@@ -88,10 +99,10 @@ function openTaskDetail() {
               <el-input-number v-model="form.max_rounds" :min="1" :max="10" />
             </el-form-item>
             <el-form-item label="策略">
-              <el-input model-value="默认" readonly />
+              <el-input model-value="deai_external（固定）" readonly />
             </el-form-item>
           </div>
-          <el-button type="primary" :loading="working" @click="submitTask">启动智能改写</el-button>
+          <el-button type="primary" :loading="working" class="submit-btn" @click="submitTask">启动智能改写</el-button>
         </el-form>
       </article>
 
@@ -129,14 +140,52 @@ function openTaskDetail() {
   padding: 18px;
 }
 
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.kpi-card {
+  border-radius: 10px;
+  border: 1px solid #d8e4f2;
+  background: linear-gradient(180deg, #fff 0%, #f7fbff 100%);
+  padding: 12px;
+}
+
+.kpi-card span {
+  color: #657d99;
+  font-size: 12px;
+}
+
+.kpi-card strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 16px;
+  color: #1d3656;
+  font-weight: 700;
+}
+
 .params {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
+.submit-btn {
+  min-width: 130px;
+}
+
 .side-panel h3 {
   margin-top: 0;
+  margin-bottom: 10px;
 }
 
 .side-panel h4 {
@@ -144,6 +193,14 @@ function openTaskDetail() {
 }
 
 @media (max-width: 900px) {
+  .page-actions {
+    justify-content: flex-start;
+  }
+
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
+
   .params {
     grid-template-columns: 1fr;
   }

@@ -59,3 +59,16 @@ async def test_authorization_scope_enforced(client) -> None:
 
     viewer_read_other = await client.get(f"/api/v1/tasks/{task_id}", headers=viewer_headers)
     assert viewer_read_other.status_code == 403
+
+    operator_update_prompt = await client.put(
+        "/api/v1/prompts/style/deai_external",
+        json={
+            "version": "1.0.0",
+            "variables": ["text"],
+            "system": "",
+            "human": "",
+            "instruction": "test",
+        },
+        headers=operator_headers,
+    )
+    assert operator_update_prompt.status_code == 403

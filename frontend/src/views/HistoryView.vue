@@ -37,15 +37,15 @@ onMounted(load);
 
 <template>
   <section>
-    <div class="page-heading">
-      <div>
-        <h2 class="page-title">历史任务</h2>
-        <p class="page-subtitle">分页查看改写任务执行结果</p>
-      </div>
+    <div class="page-actions">
       <el-button @click="load" :loading="loading">刷新</el-button>
     </div>
 
     <article class="app-card panel">
+      <div class="table-toolbar">
+        <span>总任务数：{{ taskStore.taskList?.total ?? 0 }}</span>
+        <span>当前页：{{ page }}</span>
+      </div>
       <el-table :data="taskStore.taskList?.items ?? []" v-loading="loading">
         <el-table-column prop="id" label="任务ID" min-width="220">
           <template #default="{ row }">
@@ -89,8 +89,34 @@ onMounted(load);
   padding: 16px;
 }
 
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-bottom: 10px;
+  color: #667f9b;
+  font-size: 12px;
+}
+
 .pagination {
   margin-top: 14px;
   justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .page-actions {
+    justify-content: flex-start;
+  }
+
+  .table-toolbar {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
 }
 </style>

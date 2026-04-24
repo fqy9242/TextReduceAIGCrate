@@ -19,7 +19,15 @@ async def test_smoke_e2e_main_journey(client) -> None:
 
     meta_resp = await client.get("/api/v1/prompts/metadata", headers=admin_headers)
     assert meta_resp.status_code == 200, meta_resp.text
-    assert len(meta_resp.json()["items"]) >= 1
+    items = meta_resp.json()["items"]
+    assert len(items) >= 1
+
+    first_prompt = items[0]
+    detail_resp = await client.get(
+        f"/api/v1/prompts/{first_prompt['group']}/{first_prompt['name']}",
+        headers=admin_headers,
+    )
+    assert detail_resp.status_code == 200, detail_resp.text
 
     reload_resp = await client.post("/api/v1/prompts/reload", headers=admin_headers)
     assert reload_resp.status_code == 200, reload_resp.text

@@ -11,6 +11,7 @@ PERM_TASK_EXPORT_ALL = "task:export_all"
 PERM_USER_MANAGE = "user:manage"
 PERM_PROMPT_READ = "prompt:read"
 PERM_PROMPT_RELOAD = "prompt:reload"
+PERM_PROMPT_WRITE = "prompt:write"
 
 
 ROLE_PERMISSIONS: dict[str, set[str]] = {
@@ -23,6 +24,7 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
         PERM_USER_MANAGE,
         PERM_PROMPT_READ,
         PERM_PROMPT_RELOAD,
+        PERM_PROMPT_WRITE,
     },
     "operator": {
         PERM_TASK_CREATE,
@@ -43,4 +45,3 @@ def has_permission(role_names: Iterable[str], permission: str) -> bool:
     for role in role_names:
         effective_permissions.update(ROLE_PERMISSIONS.get(role, set()))
     return permission in effective_permissions
-

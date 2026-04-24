@@ -48,11 +48,7 @@ onMounted(fetchDetail);
 
 <template>
   <section>
-    <div class="page-heading">
-      <div>
-        <h2 class="page-title">任务详情</h2>
-        <p class="page-subtitle mono-id">{{ taskId }}</p>
-      </div>
+    <div class="page-actions">
       <div class="actions">
         <el-button @click="fetchDetail" :loading="loading">刷新</el-button>
         <el-button type="primary" @click="downloadExport">导出报告</el-button>
@@ -100,19 +96,43 @@ onMounted(fetchDetail);
   gap: 8px;
 }
 
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
 .panel {
   padding: 18px;
 }
 
 .text-block {
   margin-top: 18px;
+  border: 1px solid #e1e8f2;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fbfdff;
 }
 
 .text-block h3 {
   margin: 0 0 8px;
+  font-size: 15px;
+  color: #223d5f;
 }
 
 @media (max-width: 900px) {
+  .page-actions {
+    justify-content: flex-start;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions .el-button {
+    flex: 1;
+  }
+
   :deep(.el-descriptions__body .el-descriptions__table) {
     display: block;
     overflow-x: auto;
