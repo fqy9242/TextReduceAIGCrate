@@ -19,6 +19,20 @@ const form = reactive({
 const working = ref(false);
 const latestTaskId = ref("");
 
+function formatElapsed(seconds: number | null | undefined): string {
+  if (seconds == null) return "--";
+  const total = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (h > 0) {
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s
+      .toString()
+      .padStart(2, "0")}`;
+  }
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
 async function submitTask() {
   if (form.input_text.trim().length < 20) {
     ElMessage.warning("文本至少需要 20 个字符");
@@ -40,8 +54,10 @@ async function submitTask() {
       ElMessage.success("任务达标完成");
     } else if (finalTask.status === "not_met") {
       ElMessage.warning("达到最大轮次，已返回最优版本");
+    } else if (finalTask.status === "failed") {
+      ElMessage.error(finalTask.error_message ?? "任务执行失败");
     } else {
-      ElMessage.error("任务执行失败");
+      ElMessage.info("任务仍在排队或执行中，可到历史任务或任务详情继续查看");
     }
   } catch (error: any) {
     const message = error?.response?.data?.detail ?? "任务提交失败";
@@ -120,6 +136,9 @@ function openTaskDetail() {
             </el-descriptions-item>
             <el-descriptions-item label="已用轮次">
               {{ taskStore.currentTask.rounds_used }} / {{ taskStore.currentTask.max_rounds }}
+            </el-descriptions-item>
+            <el-descriptions-item label="已执行时间">
+              {{ formatElapsed(taskStore.currentTask.elapsed_seconds) }}
             </el-descriptions-item>
           </el-descriptions>
           <h4>最佳文本</h4>

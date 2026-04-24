@@ -12,6 +12,7 @@ from app.services.detectors import BaseDetector, DetectorResult
 from app.services.external_skill_rules import ExternalSkillRulesLoader
 from app.services.llm_rewriter import LLMRewriter
 from app.services.prompt_manager import PromptManager, PromptSpec
+from app.services.task_log import add_task_log
 
 
 class RewriteAgent:
@@ -28,6 +29,14 @@ class RewriteAgent:
         self.external_rules_loader = external_rules_loader
 
     async def run_task(self, session: AsyncSession, task: RewriteTask) -> None:
+        await add_task_log(
+            session,
+            task_id=task.id,
+            stage="agent",
+            level="info",
+            message="开始执行改写闭环。",
+            detail={"style": task.style, "target_score": task.target_score, "max_rounds": task.max_rounds},
+        )
         style_instruction = ""
         try:
             style_prompt = self.prompt_manager.get_prompt("style", task.style)
@@ -123,6 +132,19 @@ class RewriteAgent:
                     },
                 )
             )
+            await add_task_log(
+                session,
+                task_id=task.id,
+                stage="round",
+                level="info",
+                message=f"第 {int(state['round_index'])} 轮完成。",
+                detail={
+                    "round": int(state["round_index"]),
+                    "score": detector_result.score,
+                    "label": detector_result.label,
+                    "latency_ms": int(state["latency_ms"]),
+                },
+            )
             task.rounds_used = int(state["round_index"])
             await session.commit()
 
@@ -174,6 +196,19 @@ class RewriteAgent:
         task.rounds_used = int(final_state.get("rounds_used", task.rounds_used))
         task.completed_at = datetime.now(timezone.utc)
         task.status = "success" if task.met_target else "not_met"
+        await add_task_log(
+            session,
+            task_id=task.id,
+            stage="agent",
+            level="info" if task.met_target else "warning",
+            message="任务执行结束。",
+            detail={
+                "status": task.status,
+                "best_score": task.best_score,
+                "rounds_used": task.rounds_used,
+                "met_target": task.met_target,
+            },
+        )
         await session.commit()
 
     @staticmethod

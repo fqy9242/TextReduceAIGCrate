@@ -57,6 +57,7 @@ async def test_task_flow_create_poll_export(client) -> None:
     assert final_payload["status"] in {"success", "not_met"}
     assert final_payload["rounds_used"] >= 1
     assert len(final_payload["iterations"]) >= 1
+    assert len(final_payload["logs"]) >= 1
 
     export_resp = await client.get(f"/api/v1/tasks/{task_id}/export", headers=operator_headers)
     assert export_resp.status_code == 200

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import get_db_session, require_permission
+from app.core.config import get_settings
 from app.core.security import hash_password
 from app.db.models import Role, User
 from app.schemas.user import CreateUserRequest, UpdateUserRoleRequest, UserOut
@@ -14,6 +15,7 @@ from app.services.rbac import PERM_USER_MANAGE
 
 
 router = APIRouter(prefix="/users", tags=["users"])
+settings = get_settings()
 
 
 def _to_user_out(user: User) -> UserOut:
@@ -86,6 +88,11 @@ async def update_user_role(
     )
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if user.username == settings.admin_bootstrap_username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bootstrap admin account role is immutable",
+        )
 
     role = await session.scalar(select(Role).where(Role.name == payload.role))
     if role is None:
@@ -106,4 +113,3 @@ async def update_user_role(
     )
     assert loaded is not None
     return _to_user_out(loaded)
-

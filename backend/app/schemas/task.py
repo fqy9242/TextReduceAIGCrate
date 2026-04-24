@@ -29,6 +29,14 @@ class TaskIterationOut(BaseModel):
     created_at: datetime
 
 
+class TaskLogOut(BaseModel):
+    level: str
+    stage: str
+    message: str
+    detail: dict = Field(default_factory=dict)
+    created_at: datetime
+
+
 class TaskResultOut(BaseModel):
     id: str
     status: str
@@ -40,9 +48,12 @@ class TaskResultOut(BaseModel):
     max_rounds: int
     rounds_used: int
     style: str
+    error_message: str | None = None
     created_at: datetime
     completed_at: datetime | None
+    elapsed_seconds: int | None = None
     iterations: list[TaskIterationOut] = Field(default_factory=list)
+    logs: list[TaskLogOut] = Field(default_factory=list)
 
 
 class TaskListItemOut(BaseModel):
@@ -55,6 +66,7 @@ class TaskListItemOut(BaseModel):
     style: str
     created_at: datetime
     completed_at: datetime | None
+    elapsed_seconds: int | None = None
 
 
 class TaskListResponse(BaseModel):

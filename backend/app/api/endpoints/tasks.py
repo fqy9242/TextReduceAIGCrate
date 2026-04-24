@@ -9,10 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import get_current_user, get_db_session, get_user_role_names, require_permission
-from app.db.models import RewriteTask, TaskIteration, User
+from app.db.models import RewriteTask, TaskIteration, TaskLog, User
 from app.schemas.task import (
     TaskCreateRequest,
     TaskIterationOut,
+    TaskLogOut,
     TaskListItemOut,
     TaskListResponse,
     TaskResultOut,
@@ -26,9 +27,28 @@ from app.services.rbac import (
     PERM_TASK_READ_OWN,
     has_permission,
 )
+from app.services.task_log import add_task_log
 
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+
+def _normalize_utc(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def _calculate_elapsed_seconds(task: RewriteTask) -> int | None:
+    started_at = _normalize_utc(task.started_at)
+    if started_at is None:
+        return None
+
+    ended_at = _normalize_utc(task.completed_at) or datetime.now(timezone.utc)
+    seconds = int((ended_at - started_at).total_seconds())
+    return max(seconds, 0)
 
 
 def _iteration_to_schema(item: TaskIteration) -> TaskIterationOut:
@@ -49,6 +69,16 @@ def _iteration_to_schema(item: TaskIteration) -> TaskIterationOut:
 
 def _task_to_result_schema(task: RewriteTask) -> TaskResultOut:
     iterations = [_iteration_to_schema(item) for item in task.iterations]
+    logs = [
+        TaskLogOut(
+            level=item.level,
+            stage=item.stage,
+            message=item.message,
+            detail=item.detail or {},
+            created_at=item.created_at,
+        )
+        for item in task.logs
+    ]
     return TaskResultOut(
         id=task.id,
         status=task.status,
@@ -60,9 +90,12 @@ def _task_to_result_schema(task: RewriteTask) -> TaskResultOut:
         max_rounds=task.max_rounds,
         rounds_used=task.rounds_used,
         style=task.style,
+        error_message=task.error_message,
         created_at=task.created_at,
         completed_at=task.completed_at,
+        elapsed_seconds=_calculate_elapsed_seconds(task),
         iterations=iterations,
+        logs=logs,
     )
 
 
@@ -115,6 +148,15 @@ async def create_task(
         created_at=datetime.now(timezone.utc),
     )
     session.add(task)
+    await session.flush()
+    await add_task_log(
+        session,
+        task_id=task.id,
+        stage="api",
+        level="info",
+        message="任务已提交，等待执行。",
+        detail={"target_score": payload.target_score, "max_rounds": payload.max_rounds},
+    )
     await write_audit_log(
         session,
         action="task.create",
@@ -136,9 +178,12 @@ async def create_task(
         max_rounds=task.max_rounds,
         rounds_used=task.rounds_used,
         style=task.style,
+        error_message=task.error_message,
         created_at=task.created_at,
         completed_at=task.completed_at,
+        elapsed_seconds=_calculate_elapsed_seconds(task),
         iterations=[],
+        logs=[],
     )
 
 
@@ -150,7 +195,7 @@ async def get_task(
 ) -> TaskResultOut:
     task = await session.scalar(
         select(RewriteTask)
-        .options(selectinload(RewriteTask.iterations))
+        .options(selectinload(RewriteTask.iterations), selectinload(RewriteTask.logs))
         .where(RewriteTask.id == task_id)
     )
     if task is None:
@@ -194,6 +239,7 @@ async def list_tasks(
             style=item.style,
             created_at=item.created_at,
             completed_at=item.completed_at,
+            elapsed_seconds=_calculate_elapsed_seconds(item),
         )
         for item in tasks
     ]
@@ -208,7 +254,7 @@ async def export_task_result(
 ) -> PlainTextResponse:
     task = await session.scalar(
         select(RewriteTask)
-        .options(selectinload(RewriteTask.iterations))
+        .options(selectinload(RewriteTask.iterations), selectinload(RewriteTask.logs))
         .where(RewriteTask.id == task_id)
     )
     if task is None:
@@ -237,6 +283,14 @@ async def export_task_result(
                 f"- Round {item.round_index} | score={item.detector_score} | label={item.detector_label}",
                 item.rewritten_text,
                 "",
+            ]
+        )
+    lines.extend(["", "Logs:"])
+    for item in task.logs:
+        lines.extend(
+            [
+                f"- {item.created_at} | {item.level.upper()} | {item.stage} | {item.message}",
+                f"  detail={item.detail or {}}",
             ]
         )
     content = "\n".join(lines)

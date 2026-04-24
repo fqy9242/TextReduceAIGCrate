@@ -80,6 +80,12 @@ class RewriteTask(Base):
         cascade="all, delete-orphan",
         order_by="TaskIteration.round_index",
     )
+    logs: Mapped[list["TaskLog"]] = relationship(
+        "TaskLog",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        order_by="TaskLog.created_at",
+    )
 
 
 class TaskIteration(Base):
@@ -102,6 +108,20 @@ class TaskIteration(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     task: Mapped[RewriteTask] = relationship("RewriteTask", back_populates="iterations")
+
+
+class TaskLog(Base):
+    __tablename__ = "task_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    task_id: Mapped[str] = mapped_column(ForeignKey("rewrite_tasks.id", ondelete="CASCADE"), index=True, nullable=False)
+    level: Mapped[str] = mapped_column(String(16), nullable=False, default="info")
+    stage: Mapped[str] = mapped_column(String(32), nullable=False, default="worker")
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    detail: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    task: Mapped[RewriteTask] = relationship("RewriteTask", back_populates="logs")
 
 
 class AuditLog(Base):

@@ -42,7 +42,11 @@ def create_app() -> FastAPI:
         detector=detector,
         external_rules_loader=external_rules_loader,
     )
-    task_worker = TaskWorker(session_factory=AsyncSessionFactory, rewrite_agent=rewrite_agent)
+    task_worker = TaskWorker(
+        session_factory=AsyncSessionFactory,
+        rewrite_agent=rewrite_agent,
+        execution_timeout_seconds=settings.task_execution_timeout_seconds,
+    )
 
     app.state.prompt_manager = prompt_manager
     app.state.task_worker = task_worker

@@ -40,10 +40,13 @@ class Settings(BaseSettings):
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o-mini"
     use_mock_llm: str = "auto"
+    openai_timeout_seconds: int = 60
+    openai_max_retries: int = 0
 
     detector_provider: str = "mock"
     detector_http_url: str = "http://127.0.0.1:9000/detect"
     detector_http_timeout_seconds: int = 20
+    task_execution_timeout_seconds: int = 500
 
     external_skill_enabled: str = "true"
     external_skill_repo_root: Path = ROOT_DIR / ".external" / "De-AI-Prompt-Enhancer-Writer-Booster-SKILL"

@@ -6,19 +6,26 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.db.models import RewriteTask
 from app.services.rewrite_agent import RewriteAgent
+from app.services.task_log import add_task_log
 
 
 logger = logging.getLogger(__name__)
 
 
 class TaskWorker:
-    def __init__(self, session_factory: async_sessionmaker, rewrite_agent: RewriteAgent):
+    def __init__(
+        self,
+        session_factory: async_sessionmaker,
+        rewrite_agent: RewriteAgent,
+        execution_timeout_seconds: int = 180,
+    ):
         self.session_factory = session_factory
         self.rewrite_agent = rewrite_agent
+        self.execution_timeout_seconds = max(1, execution_timeout_seconds)
         self.queue: asyncio.Queue[str] = asyncio.Queue()
         self._worker_task: Optional[asyncio.Task] = None
         self._running = False
@@ -73,15 +80,45 @@ class TaskWorker:
             task.status = "running"
             if task.started_at is None:
                 task.started_at = datetime.now(timezone.utc)
+            await add_task_log(
+                session,
+                task_id=task.id,
+                stage="worker",
+                level="info",
+                message="任务进入执行队列，开始处理。",
+                detail={"status": task.status},
+            )
             await session.commit()
 
             try:
-                await self.rewrite_agent.run_task(session, task)
+                await asyncio.wait_for(
+                    self.rewrite_agent.run_task(session, task),
+                    timeout=self.execution_timeout_seconds,
+                )
+            except asyncio.TimeoutError:
+                await session.rollback()
+                await self._fail_task(
+                    session=session,
+                    task_id=task_id,
+                    error_message=f"Task execution timeout after {self.execution_timeout_seconds} seconds",
+                    message="任务执行超时，已终止。",
+                    detail={"timeout_seconds": self.execution_timeout_seconds},
+                )
             except Exception as exc:
-                task.status = "failed"
-                task.error_message = str(exc)
-                task.completed_at = datetime.now(timezone.utc)
-                await session.commit()
+                await session.rollback()
+                detail = {"error": str(exc), "error_type": type(exc).__name__}
+                if type(exc).__name__ == "APITimeoutError":
+                    llm_settings = getattr(getattr(self.rewrite_agent, "llm_rewriter", None), "settings", None)
+                    timeout_seconds = getattr(llm_settings, "openai_timeout_seconds", None)
+                    detail["openai_timeout_seconds"] = timeout_seconds
+                    detail["hint"] = "Increase OPENAI_TIMEOUT_SECONDS or check OPENAI_BASE_URL/model/network."
+                await self._fail_task(
+                    session=session,
+                    task_id=task_id,
+                    error_message=str(exc),
+                    message="任务执行失败。",
+                    detail=detail,
+                )
 
     async def _mark_task_failed(self, task_id: str, message: str) -> None:
         async with self.session_factory() as session:
@@ -91,4 +128,37 @@ class TaskWorker:
             task.status = "failed"
             task.error_message = message[:2000]
             task.completed_at = datetime.now(timezone.utc)
+            await add_task_log(
+                session,
+                task_id=task.id,
+                stage="worker",
+                level="error",
+                message="任务执行器出现异常，任务被标记为失败。",
+                detail={"error": message[:2000]},
+            )
             await session.commit()
+
+    async def _fail_task(
+        self,
+        *,
+        session: AsyncSession,
+        task_id: str,
+        error_message: str,
+        message: str,
+        detail: dict,
+    ) -> None:
+        task = await session.scalar(select(RewriteTask).where(RewriteTask.id == task_id))
+        if task is None:
+            return
+        task.status = "failed"
+        task.error_message = error_message[:2000]
+        task.completed_at = datetime.now(timezone.utc)
+        await add_task_log(
+            session,
+            task_id=task_id,
+            stage="worker",
+            level="error",
+            message=message,
+            detail=detail,
+        )
+        await session.commit()

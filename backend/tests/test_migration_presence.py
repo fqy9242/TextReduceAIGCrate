@@ -10,3 +10,9 @@ def test_initial_migration_contains_required_tables() -> None:
     for table in ["users", "roles", "user_roles", "rewrite_tasks", "task_iterations", "audit_logs"]:
         assert f"\"{table}\"" in content
 
+
+def test_task_logs_migration_exists() -> None:
+    migration_file = Path(__file__).resolve().parents[1] / "alembic" / "versions" / "0002_add_task_logs.py"
+    assert migration_file.exists()
+    content = migration_file.read_text(encoding="utf-8")
+    assert "\"task_logs\"" in content

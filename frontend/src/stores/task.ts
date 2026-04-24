@@ -4,12 +4,35 @@ import * as taskApi from "@/api/tasks";
 import type { CreateTaskPayload } from "@/api/tasks";
 import type { TaskListResponse, TaskResult } from "@/types";
 
-const FINAL_STATUSES = new Set(["success", "not_met", "failed"]);
+const FINAL_STATUSES = new Set(["success", "not_met", "failed", "error"]);
 
 export const useTaskStore = defineStore("task", () => {
   const currentTask = ref<TaskResult | null>(null);
   const taskList = ref<TaskListResponse | null>(null);
   const loading = ref(false);
+
+  // Auto-increment elapsed time for active tasks
+  setInterval(() => {
+    if (currentTask.value) {
+      if (
+        currentTask.value.status === "running" ||
+        (!FINAL_STATUSES.has(currentTask.value.status) && currentTask.value.status !== "queued")
+      ) {
+        if (currentTask.value.elapsed_seconds != null) {
+          currentTask.value.elapsed_seconds += 1;
+        }
+      }
+    }
+    if (taskList.value?.items) {
+      for (const t of taskList.value.items) {
+        if (t.status === "running" || (!FINAL_STATUSES.has(t.status) && t.status !== "queued")) {
+          if (t.elapsed_seconds != null) {
+            t.elapsed_seconds += 1;
+          }
+        }
+      }
+    }
+  }, 1000);
 
   async function submitTask(payload: CreateTaskPayload): Promise<TaskResult> {
     loading.value = true;

@@ -20,6 +20,8 @@ class LLMRewriter:
                 api_key=settings.openai_api_key,
                 base_url=settings.openai_base_url,
                 temperature=0.85,
+                timeout=settings.openai_timeout_seconds,
+                max_retries=max(0, settings.openai_max_retries),
             )
 
     @property

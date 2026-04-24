@@ -72,3 +72,23 @@ async def test_authorization_scope_enforced(client) -> None:
         headers=operator_headers,
     )
     assert operator_update_prompt.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_bootstrap_admin_role_is_immutable(client) -> None:
+    admin = await _login(client, "admin", "Admin@123456")
+    admin_headers = {"Authorization": f"Bearer {admin['access_token']}"}
+
+    users_resp = await client.get("/api/v1/users", headers=admin_headers)
+    assert users_resp.status_code == 200, users_resp.text
+    users = users_resp.json()
+    admin_user = next((item for item in users if item["username"] == "admin"), None)
+    assert admin_user is not None
+
+    patch_resp = await client.patch(
+        f"/api/v1/users/{admin_user['id']}/role",
+        json={"role": "viewer"},
+        headers=admin_headers,
+    )
+    assert patch_resp.status_code == 403
+    assert "immutable" in patch_resp.text.lower()

@@ -10,15 +10,10 @@ def test_external_skill_loader_extracts_numbered_rules(tmp_path: Path) -> None:
     skill_dir.mkdir(parents=True, exist_ok=True)
     skill_file = skill_dir / "SKILL.md"
     skill_file.write_text(
-        "\n".join(
-            [
-                "## 6.5 快速自检清单",
-                "1. **而是命中 = 0**",
-                "2. **冒号 <= 2**",
-                "3. **禁用模板路标**",
-                "## 7. 参考文件",
-            ]
-        ),
+        "---\nname: de-AI-writing\n---\n"
+        "## 1. 规则项\n"
+        "规则一。\n"
+        "规则二。",
         encoding="utf-8",
     )
 
@@ -31,9 +26,9 @@ def test_external_skill_loader_extracts_numbered_rules(tmp_path: Path) -> None:
     suffix = loader.build_instruction_suffix()
 
     assert loader.has_rules() is True
-    assert "而是命中 = 0" in suffix
-    assert "冒号 <= 2" in suffix
-    assert "禁用模板路标" not in suffix
+    assert "规则一。" in suffix
+    assert "规则二。" in suffix
+    assert "name: de-AI-writing" not in suffix
 
 
 def test_external_skill_loader_handles_missing_repo(tmp_path: Path) -> None:

@@ -16,6 +16,14 @@ export interface TaskIteration {
   created_at: string;
 }
 
+export interface TaskLog {
+  level: "debug" | "info" | "warning" | "error" | string;
+  stage: string;
+  message: string;
+  detail: Record<string, unknown>;
+  created_at: string;
+}
+
 export interface TaskResult {
   id: string;
   status: "queued" | "running" | "success" | "not_met" | "failed";
@@ -27,9 +35,12 @@ export interface TaskResult {
   max_rounds: number;
   rounds_used: number;
   style: string;
+  error_message: string | null;
   created_at: string;
   completed_at: string | null;
+  elapsed_seconds: number | null;
   iterations: TaskIteration[];
+  logs: TaskLog[];
 }
 
 export interface TaskListItem {
@@ -42,6 +53,7 @@ export interface TaskListItem {
   style: string;
   created_at: string;
   completed_at: string | null;
+  elapsed_seconds: number | null;
 }
 
 export interface TaskListResponse {

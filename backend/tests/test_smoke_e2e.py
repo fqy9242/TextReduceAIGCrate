@@ -66,17 +66,22 @@ async def test_smoke_e2e_main_journey(client) -> None:
     task_id = create_task.json()["id"]
 
     final_status = None
+    final_payload = None
     for _ in range(60):
         status_resp = await client.get(f"/api/v1/tasks/{task_id}", headers=operator_headers)
         assert status_resp.status_code == 200
         payload = status_resp.json()
         if payload["status"] in {"success", "not_met", "failed"}:
             final_status = payload["status"]
+            final_payload = payload
             break
         await asyncio.sleep(0.2)
 
     assert final_status in {"success", "not_met"}
+    assert final_payload is not None
+    assert len(final_payload["logs"]) >= 1
 
     export_resp = await client.get(f"/api/v1/tasks/{task_id}/export", headers=operator_headers)
     assert export_resp.status_code == 200
     assert "Best Rewritten Text:" in export_resp.text
+    assert "Logs:" in export_resp.text

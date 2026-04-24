@@ -63,24 +63,15 @@ class ExternalSkillRulesLoader:
 
     @staticmethod
     def _extract_compact_rules(text: str, max_items: int) -> str:
-        checklist_block = ExternalSkillRulesLoader._find_section_block(text, "## 6.5 快速自检清单")
-        rules = ExternalSkillRulesLoader._extract_numbered_items(checklist_block)
-        if not rules:
-            hard_ban_block = ExternalSkillRulesLoader._find_section_block(text, "### 1.4 强制禁令")
-            rules = ExternalSkillRulesLoader._extract_hard_bans(hard_ban_block)
-
-        normalized: list[str] = []
-        for item in rules:
-            cleaned = item.replace("`", "").replace("**", "")
-            cleaned = re.sub(r"\s+", " ", cleaned).strip(" -")
-            if cleaned:
-                normalized.append(cleaned)
-
-        if not normalized:
-            return ""
-
-        picked = normalized[: max(1, max_items)]
-        return "\n".join(f"- {item}" for item in picked)
+        # 直接注入整个 SKILL.md 文档的正文部分（去除开头的 YAML frontmatter）
+        # 匹配 --- ... --- 头部
+        if text.startswith("---"):
+            parts = text.split("---", 2)
+            if len(parts) >= 3:
+                # 剔除 header
+                text = parts[2].strip()
+        
+        return text
 
     @staticmethod
     def _find_section_block(text: str, title: str) -> str:
