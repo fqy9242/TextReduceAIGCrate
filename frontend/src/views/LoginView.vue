@@ -30,255 +30,306 @@ async function onSubmit() {
 
 <template>
   <div class="login-page">
-    <section class="intro">
-      <div class="intro-head">
-        <img :src="logoUrl" alt="TextOps Logo" class="intro-logo" />
-        <div>
-          <div class="intro-badge">TextOps Console</div>
-          <h1>文本改写与 AIGC 风险控制系统</h1>
-        </div>
-      </div>
-      <p>面向业务团队的专业改写控制台，支持任务闭环、历史追踪、权限治理与 Prompt 在线管理。</p>
-      <div class="intro-grid">
-        <div class="intro-metric">
-          <span>默认阈值</span>
-          <strong>≤ 20%</strong>
-        </div>
-        <div class="intro-metric">
-          <span>最大轮次</span>
-          <strong>3 轮</strong>
-        </div>
-        <div class="intro-metric">
-          <span>策略模式</span>
-          <strong>deai_external</strong>
-        </div>
-      </div>
-      <ul class="feature-list">
-        <li>改写 -> 检测 -> 决策闭环自动执行</li>
-        <li>任务状态与迭代轨迹全程可追踪</li>
-        <li>管理员在线管理 Prompt 与用户权限</li>
-      </ul>
-    </section>
+    <div class="login-container">
+      <!-- 左侧介绍区 -->
+      <section class="intro-section">
+        <div class="intro-content">
+          <div class="brand-header">
+            <img :src="logoUrl" alt="TextOps Logo" class="brand-logo" />
+            <div class="brand-badge">TextOps Console</div>
+          </div>
+          
+          <h1 class="brand-title">文本改写与<br />AIGC 风险控制系统</h1>
+          <p class="brand-desc">
+            面向业务团队的专业改写控制台，支持任务闭环、历史追踪、权限治理与 Prompt 在线管理。
+          </p>
 
-    <section class="app-card form-panel">
-      <div class="form-brand">
-        <img :src="logoUrl" alt="TextOps Logo" />
-        <div>
-          <h2>控制台登录</h2>
-          <p>请输入管理员或业务账号</p>
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <div class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div class="metric-info">
+                <div class="metric-value">≤ 20%</div>
+                <div class="metric-label">默认查重阈值</div>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+              </div>
+              <div class="metric-info">
+                <div class="metric-value">3 轮</div>
+                <div class="metric-label">最大迭代轮次</div>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              </div>
+              <div class="metric-info">
+                <div class="metric-value">deai_external</div>
+                <div class="metric-label">核心策略模式</div>
+              </div>
+            </div>
+          </div>
+
+          <ul class="feature-list">
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              改写 → 检测 → 决策闭环自动执行
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              任务状态与迭代轨迹全程可追踪
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              管理员在线管理 Prompt 与用户权限
+            </li>
+          </ul>
         </div>
-      </div>
-      <el-form label-position="top" @submit.prevent>
-        <el-form-item label="用户名">
-          <el-input v-model="form.username" placeholder="请输入用户名" />
-        </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
-        </el-form-item>
-        <el-button type="primary" :loading="loading" class="submit-btn" @click="onSubmit">
-          进入工作台
-        </el-button>
-      </el-form>
-      <p class="form-footer">企业内部系统，请勿向无权限人员泄露账号信息。</p>
-    </section>
+      </section>
+
+      <!-- 右侧登录表单 -->
+      <section class="form-section">
+        <div class="login-card app-card">
+          <div class="form-header">
+            <h2 class="form-title">控制台登录</h2>
+            <p class="form-subtitle">请输入管理员或业务账号</p>
+          </div>
+
+          <el-form label-position="top" @submit.prevent class="login-form">
+            <el-form-item label="用户名">
+              <el-input
+                v-model="form.username"
+                placeholder="请输入用户名"
+                prefix-icon="User"
+                size="large"
+              />
+            </el-form-item>
+            <el-form-item label="密码">
+              <el-input
+                v-model="form.password"
+                type="password"
+                show-password
+                placeholder="请输入密码"
+                prefix-icon="Lock"
+                size="large"
+              />
+            </el-form-item>
+
+            <el-button
+              type="primary"
+              :loading="loading"
+              class="submit-btn"
+              size="large"
+              @click="onSubmit"
+            >
+              进入工作台
+            </el-button>
+          </el-form>
+
+          <div class="form-footer">
+            企业内部系统，请勿向无权限人员泄露账号信息。
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .login-page {
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 420px;
-  align-items: center;
-  gap: 28px;
-  padding: 32px 48px;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-page::before {
-  content: "";
-  position: absolute;
-  inset: -20% 42% auto -10%;
-  height: 380px;
-  background: radial-gradient(circle, rgba(24, 102, 219, 0.22) 0%, rgba(24, 102, 219, 0) 72%);
-  pointer-events: none;
-}
-
-.intro {
-  border-radius: 14px;
-  border: 1px solid #cad8ea;
-  background: linear-gradient(135deg, #1a3459 0%, #214773 58%, #1c4069 100%);
-  padding: 28px;
-  color: #f4f8ff;
-  box-shadow: 0 16px 34px rgba(16, 40, 76, 0.24);
-  position: relative;
-  z-index: 1;
-}
-
-.intro-head {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--bg-page);
 }
 
-.intro-logo {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  object-fit: cover;
-  box-shadow: 0 8px 20px rgba(8, 19, 37, 0.34);
+.login-container {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 48px;
+  align-items: center;
 }
 
-.intro-badge {
+/* ===== 左侧介绍区 ===== */
+.intro-section {
+  padding-right: 24px;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+}
+
+.brand-badge {
   display: inline-flex;
   align-items: center;
-  height: 28px;
-  border-radius: 999px;
+  height: 26px;
   padding: 0 12px;
   font-size: 12px;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--brand-600);
+  background-color: var(--el-color-primary-light-9);
+  border-radius: 999px;
 }
 
-.intro h1 {
-  margin: 0;
-  margin-top: 10px;
-  font-size: 34px;
-  line-height: 1.2;
-  letter-spacing: 0.2px;
+.brand-title {
+  margin: 0 0 16px;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
 }
 
-.intro p {
-  margin: 12px 0 0;
-  max-width: 620px;
-  color: #d5e4f8;
-  font-size: 14px;
+.brand-desc {
+  margin: 0 0 32px;
+  font-size: 15px;
   line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 480px;
 }
 
-.intro-grid {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+.metrics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
-.intro-metric {
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
+  background-color: var(--el-color-primary-light-9);
+  color: var(--brand-600);
 }
 
-.intro-metric span {
-  display: block;
-  color: #c8dbf3;
-  font-size: 12px;
+.metric-info {
+  display: flex;
+  flex-direction: column;
 }
 
-.intro-metric strong {
-  display: block;
-  margin-top: 2px;
-  color: #fff;
+.metric-value {
   font-size: 18px;
-  letter-spacing: 0.1px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
 }
 
 .feature-list {
-  margin: 20px 0 0;
-  padding: 0;
   list-style: none;
-  display: grid;
-  gap: 8px;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .feature-list li {
-  position: relative;
-  padding-left: 24px;
-  color: #d8e8fb;
-  font-size: 13px;
-}
-
-.feature-list li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  top: -1px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: #1b3d69;
-  background: #cde3ff;
-}
-
-.form-panel {
-  padding: 24px 22px 18px;
-  position: relative;
-  z-index: 1;
-}
-
-.form-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
+  font-size: 14px;
+  color: var(--text-primary);
 }
 
-.form-brand img {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  object-fit: cover;
-  box-shadow: 0 6px 16px rgba(29, 64, 111, 0.24);
+.feature-list li svg {
+  color: #52c41a;
+  flex-shrink: 0;
 }
 
-.form-brand h2 {
+/* ===== 右侧登录表单 ===== */
+.login-card {
+  padding: 40px;
+  background: var(--bg-surface);
+  border-radius: 16px;
+}
+
+.form-header {
+  margin-bottom: 32px;
+}
+
+.form-title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.form-subtitle {
   margin: 0;
-  font-size: 18px;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 
-.form-brand p {
-  margin: 2px 0 0;
-  color: var(--text-secondary);
-  font-size: 12px;
+.login-form :deep(.el-form-item__label) {
+  padding-bottom: 4px;
 }
 
 .submit-btn {
   width: 100%;
-  margin-top: 4px;
-  height: 40px;
+  margin-top: 12px;
+  height: 44px;
+  font-size: 15px;
 }
 
 .form-footer {
-  margin: 14px 0 0;
-  color: #7f92ab;
+  margin-top: 24px;
+  text-align: center;
   font-size: 12px;
-  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
-@media (max-width: 900px) {
-  .login-page {
+/* ===== 响应式 ===== */
+@media (max-width: 992px) {
+  .login-container {
     grid-template-columns: 1fr;
-    padding: 14px;
+    max-width: 500px;
+    gap: 40px;
   }
-
-  .intro-head {
-    flex-direction: column;
+  
+  .intro-section {
+    padding-right: 0;
   }
-
-  .intro h1 {
+  
+  .brand-title {
     font-size: 28px;
-  }
-
-  .intro-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>
