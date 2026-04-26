@@ -25,7 +25,7 @@ export interface TaskLog {
 
 export interface TaskResult {
   id: string;
-  status: "queued" | "running" | "success" | "not_met" | "failed";
+  status: "queued" | "running" | "success" | "not_met" | "failed" | "cancelled";
   input_text: string;
   best_text: string | null;
   best_score: number | null;

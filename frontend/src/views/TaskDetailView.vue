@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { exportTask, createTask } from "@/api/tasks";
+import { exportTask, createTask, cancelTask } from "@/api/tasks";
 import { useTaskStore } from "@/stores/task";
 import ScoreTag from "@/components/ScoreTag.vue";
 import IterationTimeline from "@/components/IterationTimeline.vue";
@@ -131,6 +131,28 @@ async function retryTask() {
   }
 }
 
+async function cancelCurrentTask() {
+  if (!taskId.value) return;
+  try {
+    await ElMessageBox.confirm("确定要终止该任务吗？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    loading.value = true;
+    await cancelTask(taskId.value);
+    ElMessage.success("任务已成功终止");
+    await fetchDetail();
+  } catch (error: any) {
+    if (error !== "cancel") {
+      const message = error?.response?.data?.detail ?? error?.message ?? "终止任务失败";
+      ElMessage.error(String(message));
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
 async function downloadExport() {
   if (!taskId.value) return;
   try {
@@ -156,6 +178,13 @@ onMounted(fetchDetail);
     <div class="page-actions">
       <div class="actions">
         <el-button @click="fetchDetail" :loading="loading">刷新</el-button>
+        <el-button 
+          v-if="['queued', 'running'].includes(taskStore.currentTask?.status ?? '')" 
+          type="danger" 
+          @click="cancelCurrentTask" 
+          :loading="loading">
+          终止
+        </el-button>
         <el-button type="success" @click="retryTask" :loading="loading">重试</el-button>
         <el-button type="primary" @click="downloadExport">导出报告</el-button>
       </div>

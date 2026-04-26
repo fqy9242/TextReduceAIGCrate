@@ -31,3 +31,7 @@ export async function exportTask(taskId: string): Promise<string> {
   });
   return data;
 }
+
+export async function cancelTask(taskId: string): Promise<void> {
+  await apiClient.post(`/tasks/${taskId}/cancel`);
+}

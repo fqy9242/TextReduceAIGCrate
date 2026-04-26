@@ -309,3 +309,41 @@ async def export_task_result(
         )
     content = "\n".join(lines)
     return PlainTextResponse(content=content, media_type="text/plain; charset=utf-8")
+
+
+@router.post("/{task_id}/cancel")
+async def cancel_task(
+    task_id: str,
+    request: Request,
+    session: AsyncSession = Depends(get_db_session),
+    user: User = Depends(get_current_user),
+) -> dict:
+    task = await session.scalar(select(RewriteTask).where(RewriteTask.id == task_id))
+    if task is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    
+    _check_task_read_access(task, user)
+
+    if task.status not in ("queued", "running"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot cancel task in status: {task.status}",
+        )
+
+    was_cancelled = await request.app.state.task_worker.cancel_task(task_id)
+    
+    if task.status == "queued" or not was_cancelled:
+        task.status = "cancelled"
+        task.error_message = "任务已手动取消。"
+        task.completed_at = datetime.now(timezone.utc)
+        await add_task_log(
+            session,
+            task_id=task.id,
+            stage="api",
+            level="warning",
+            message="任务已被用户取消。",
+            detail={"cancelled_by": user.username},
+        )
+        await session.commit()
+
+    return {"message": "Task cancelled successfully"}
