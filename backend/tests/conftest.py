@@ -6,6 +6,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
+from unittest.mock import patch
+
 import httpx
 import pytest
 import pytest_asyncio
@@ -23,8 +25,6 @@ if str(BACKEND_DIR) not in sys.path:
 os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///{DB_PATH.as_posix()}")
 os.environ.setdefault("SYNC_DATABASE_URL", f"sqlite:///{DB_PATH.as_posix()}")
 os.environ.setdefault("PROMPTS_ROOT", str(PROMPTS_DIR))
-os.environ.setdefault("USE_MOCK_LLM", "true")
-os.environ.setdefault("DETECTOR_PROVIDER", "mock")
 os.environ.setdefault("SECRET_KEY", "test-secret")
 os.environ.setdefault("ADMIN_BOOTSTRAP_USERNAME", "admin")
 os.environ.setdefault("ADMIN_BOOTSTRAP_PASSWORD", "Admin@123456")
@@ -57,6 +57,15 @@ async def app():
     application = create_app()
     async with LifespanManager(application):
         yield application
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def mock_openai_ainvoke():
+    with patch("langchain_openai.ChatOpenAI.ainvoke") as mock_ainvoke:
+        class DummyResult:
+            content = '{"score": 20, "label": "human_like", "reason": "mocked in tests"}'
+        mock_ainvoke.return_value = DummyResult()
+        yield mock_ainvoke
 
 
 

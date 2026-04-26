@@ -7,6 +7,7 @@ from typing import Any
 from langgraph.graph import END, START, StateGraph
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy import delete
 from app.db.models import RewriteTask, TaskIteration
 from app.services.detectors import BaseDetector, DetectorResult
 from app.services.external_skill_rules import ExternalSkillRulesLoader
@@ -40,7 +41,8 @@ class RewriteAgent:
     async def run_task(self, session: AsyncSession, task: RewriteTask) -> None:
         runtime_settings = await self.get_runtime_settings(session)
         default_style = runtime_settings.default_style
-        llm_mode = self.llm_rewriter.resolve_llm_mode(runtime_settings)
+        await session.execute(delete(TaskIteration).where(TaskIteration.task_id == task.id))
+        
         await add_task_log(
             session,
             task_id=task.id,
@@ -51,7 +53,6 @@ class RewriteAgent:
                 "style": task.style,
                 "target_score": task.target_score,
                 "max_rounds": task.max_rounds,
-                "llm_mode": llm_mode,
                 "llm_model": runtime_settings.openai_model,
             },
         )
@@ -108,7 +109,7 @@ class RewriteAgent:
             }
 
         async def detect_score(state: dict[str, Any]) -> dict[str, Any]:
-            detector_result = await self.detector.detect(state["candidate_text"])
+            detector_result = await self.detector.detect(state["candidate_text"], runtime_settings)
             return {**state, "detector_result": detector_result}
 
         async def decide_next(state: dict[str, Any]) -> dict[str, Any]:
@@ -152,10 +153,8 @@ class RewriteAgent:
                     detector_score=detector_result.score,
                     detector_label=detector_result.label,
                     latency_ms=int(state["latency_ms"]),
-                    detector_raw={
-                        **detector_result.raw,
-                        "llm_mode": llm_mode,
-                    },
+                    detector_raw=detector_result.raw,
+                    created_at=datetime.now(timezone.utc),
                 )
             )
             await add_task_log(
@@ -169,6 +168,8 @@ class RewriteAgent:
                     "score": detector_result.score,
                     "label": detector_result.label,
                     "latency_ms": int(state["latency_ms"]),
+                    "rewritten_text": state["candidate_text"],
+                    "detector_raw": detector_result.raw,
                 },
             )
             task.rounds_used = int(state["round_index"])

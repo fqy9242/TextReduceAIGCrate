@@ -11,7 +11,6 @@ export interface TaskIteration {
   rewritten_text: string;
   detector_score: number;
   detector_label: "ai_like" | "human_like" | "uncertain";
-  llm_mode?: "mock" | "real" | string | null;
   latency_ms: number;
   created_at: string;
 }
@@ -89,12 +88,11 @@ export interface RuntimeSettings {
   default_target_score: number;
   default_max_rounds: number;
   default_style: string;
-  use_mock_llm: "auto" | "true" | "false";
   openai_base_url: string;
   openai_model: string;
   openai_timeout_seconds: number;
   openai_max_retries: number;
+  detector_model: string;
   available_styles: string[];
   has_openai_api_key: boolean;
-  effective_llm_mode: "mock" | "real";
 }

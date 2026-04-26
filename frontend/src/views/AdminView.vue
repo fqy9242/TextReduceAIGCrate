@@ -38,20 +38,19 @@ const systemForm = reactive({
   default_target_score: 20,
   default_max_rounds: 3,
   default_style: "deai_external",
-  use_mock_llm: "auto" as RuntimeSettings["use_mock_llm"],
   openai_base_url: "https://api.openai.com/v1",
   openai_model: "gpt-4o-mini",
   openai_timeout_seconds: 60,
   openai_max_retries: 0,
+  detector_model: "gpt-4o-mini",
   has_openai_api_key: false,
-  effective_llm_mode: "mock" as RuntimeSettings["effective_llm_mode"],
 });
 
 const promptLabel = computed(() => {
   if (!promptForm.group || !promptForm.name) return "";
   return `${promptForm.group}.${promptForm.name}`;
 });
-const llmModeTagType = computed(() => (systemForm.effective_llm_mode === "real" ? "success" : "info"));
+
 
 function toPromptKey(group: string, name: string): string {
   return `${group}:${name}`;
@@ -78,13 +77,12 @@ function applyRuntimeSettings(value: RuntimeSettings) {
   systemForm.default_target_score = value.default_target_score;
   systemForm.default_max_rounds = value.default_max_rounds;
   systemForm.default_style = value.default_style;
-  systemForm.use_mock_llm = value.use_mock_llm;
   systemForm.openai_base_url = value.openai_base_url;
   systemForm.openai_model = value.openai_model;
   systemForm.openai_timeout_seconds = value.openai_timeout_seconds;
   systemForm.openai_max_retries = value.openai_max_retries;
+  systemForm.detector_model = value.detector_model;
   systemForm.has_openai_api_key = value.has_openai_api_key;
-  systemForm.effective_llm_mode = value.effective_llm_mode;
   runtimeStyleOptions.value = value.available_styles;
 }
 
@@ -219,9 +217,9 @@ async function savePromptChanges() {
     return;
   }
 
-  if (promptForm.group === "rewrite") {
+  if (promptForm.group === "rewrite" || promptForm.group === "detector") {
     if (!promptForm.system.trim() || !promptForm.human.trim()) {
-      ElMessage.warning("rewrite Prompt 必须包含 system 和 human");
+      ElMessage.warning("此类型的 Prompt 必须包含 system 和 human");
       return;
     }
   } else if (!promptForm.instruction.trim()) {
@@ -263,11 +261,11 @@ async function saveSystemSettings() {
       default_target_score: systemForm.default_target_score,
       default_max_rounds: systemForm.default_max_rounds,
       default_style: systemForm.default_style,
-      use_mock_llm: systemForm.use_mock_llm,
       openai_base_url: systemForm.openai_base_url.trim(),
       openai_model: systemForm.openai_model.trim(),
       openai_timeout_seconds: systemForm.openai_timeout_seconds,
       openai_max_retries: systemForm.openai_max_retries,
+      detector_model: systemForm.detector_model.trim(),
     });
     applyRuntimeSettings(settings);
     ElMessage.success("系统设置已保存");
@@ -306,14 +304,13 @@ onMounted(async () => {
           <h3>系统设置</h3>
           <p class="panel-tip">除密钥外，任务默认值和 LLM 运行参数都从数据库读取，可在这里直接修改。</p>
         </div>
-        <el-tag :type="llmModeTagType" effect="light">当前模式：{{ systemForm.effective_llm_mode }}</el-tag>
       </div>
 
       <el-alert
         :title="
           systemForm.has_openai_api_key
             ? '已检测到环境变量中的 API Key；页面只管理非敏感参数。'
-            : '当前未检测到环境变量中的 API Key；auto 模式会自动回退到 Mock。'
+            : '当前未检测到环境变量中的 API Key；可能无法正常调用大模型。'
         "
         :type="systemForm.has_openai_api_key ? 'info' : 'warning'"
         show-icon
@@ -339,13 +336,7 @@ onMounted(async () => {
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="LLM 模式">
-            <el-select v-model="systemForm.use_mock_llm">
-              <el-option label="auto" value="auto" />
-              <el-option label="强制 mock" value="true" />
-              <el-option label="强制 real" value="false" />
-            </el-select>
-          </el-form-item>
+
           <el-form-item label="OpenAI Base URL">
             <el-input v-model="systemForm.openai_base_url" />
           </el-form-item>
@@ -357,6 +348,9 @@ onMounted(async () => {
           </el-form-item>
           <el-form-item label="重试次数">
             <el-input-number v-model="systemForm.openai_max_retries" :min="0" :max="20" />
+          </el-form-item>
+          <el-form-item label="Detector Model">
+            <el-input v-model="systemForm.detector_model" />
           </el-form-item>
         </div>
 
@@ -447,7 +441,7 @@ onMounted(async () => {
             <el-input v-model="promptForm.variablesText" type="textarea" :rows="2" />
           </el-form-item>
 
-          <template v-if="promptForm.group === 'rewrite'">
+          <template v-if="promptForm.group === 'rewrite' || promptForm.group === 'detector'">
             <el-form-item label="System">
               <el-input v-model="promptForm.system" type="textarea" :rows="7" />
             </el-form-item>

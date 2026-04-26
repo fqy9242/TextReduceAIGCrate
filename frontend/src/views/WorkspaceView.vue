@@ -14,7 +14,7 @@ const loadingSettings = ref(false);
 
 const form = reactive({
   input_text:
-    "请输入需要降AIGC率的中文文本。系统会在保持语义和逻辑的前提下进行多轮改写，并使用检测适配层进行闭环评估。",
+    "",
   target_score: 20,
   max_rounds: 3,
   style: "deai_external",
@@ -28,7 +28,6 @@ const styleOptions = computed(() => {
   }
   return [form.style];
 });
-const llmModeLabel = computed(() => (runtimeSettings.value?.effective_llm_mode === "real" ? "Real" : "Mock"));
 
 function formatElapsed(seconds: number | null | undefined): string {
   if (seconds == null) return "--";
@@ -121,10 +120,6 @@ onMounted(async () => {
       <div class="kpi-card">
         <span>最大轮次</span>
         <strong>{{ form.max_rounds }} 轮</strong>
-      </div>
-      <div class="kpi-card">
-        <span>LLM 模式</span>
-        <strong>{{ llmModeLabel }}</strong>
       </div>
     </div>
 

@@ -98,7 +98,7 @@ onMounted(load);
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="110" />
-        <el-table-column label="分数" width="130">
+        <el-table-column label="AI率" width="130">
           <template #default="{ row }">
             <ScoreTag :score="row.best_score" />
           </template>

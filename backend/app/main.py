@@ -30,7 +30,7 @@ def create_app() -> FastAPI:
 
     prompt_manager = PromptManager(settings.prompts_root)
     system_settings_service = SystemSettingsService(settings)
-    detector = build_detector(settings)
+    detector = build_detector(settings, prompt_manager)
     external_rules_loader = ExternalSkillRulesLoader(
         enabled=settings.external_skill_enabled_flag,
         repo_root=settings.external_skill_repo_root,

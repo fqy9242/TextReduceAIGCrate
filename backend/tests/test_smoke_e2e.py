@@ -77,6 +77,8 @@ async def test_smoke_e2e_main_journey(client) -> None:
             break
         await asyncio.sleep(0.2)
 
+    if final_status == "failed":
+        print(f"FAILED PAYLOAD: {final_payload}")
     assert final_status in {"success", "not_met"}
     assert final_payload is not None
     assert len(final_payload["logs"]) >= 1

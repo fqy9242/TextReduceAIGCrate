@@ -20,7 +20,7 @@ class SequenceDetector(BaseDetector):
         self.scores = scores
         self.index = 0
 
-    async def detect(self, text: str) -> DetectorResult:
+    async def detect(self, text: str, runtime_settings=None) -> DetectorResult:
         score = self.scores[min(self.index, len(self.scores) - 1)]
         self.index += 1
         label = "human_like" if score <= 20 else "ai_like"

@@ -39,13 +39,9 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o-mini"
-    use_mock_llm: str = "auto"
     openai_timeout_seconds: int = 60
     openai_max_retries: int = 0
 
-    detector_provider: str = "mock"
-    detector_http_url: str = "http://127.0.0.1:9000/detect"
-    detector_http_timeout_seconds: int = 20
     task_execution_timeout_seconds: int = 1800
 
     external_skill_enabled: str = "true"
@@ -63,16 +59,6 @@ class Settings(BaseSettings):
     @property
     def debug_enabled(self) -> bool:
         return self.debug.strip().lower() in {"1", "true", "yes", "on", "debug"}
-
-    @property
-    def use_mock_llm_flag(self) -> bool:
-        value = self.use_mock_llm.strip().lower()
-        if value in {"1", "true", "yes", "on", "mock"}:
-            return True
-        if value in {"0", "false", "no", "off", "real"}:
-            return False
-        # auto mode: use real model when API key exists, otherwise fall back to mock.
-        return not bool(self.openai_api_key.strip())
 
     @property
     def external_skill_enabled_flag(self) -> bool:

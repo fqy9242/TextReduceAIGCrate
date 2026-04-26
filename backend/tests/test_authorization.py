@@ -79,7 +79,6 @@ async def test_authorization_scope_enforced(client) -> None:
             "default_target_score": 18,
             "default_max_rounds": 4,
             "default_style": "deai_external",
-            "use_mock_llm": "true",
             "openai_base_url": "https://api.openai.com/v1",
             "openai_model": "gpt-4o-mini",
             "openai_timeout_seconds": 60,

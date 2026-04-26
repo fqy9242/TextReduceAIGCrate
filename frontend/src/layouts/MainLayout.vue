@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import logoUrl from "@/assets/logo.png";
+import { useAuthStore } from "@/stores/auth";
+import { Histogram, Monitor, Setting } from "@element-plus/icons-vue";
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Monitor, Histogram, Setting } from "@element-plus/icons-vue";
-import { useAuthStore } from "@/stores/auth";
-import logoUrl from "@/assets/logo.png";
 
 const route = useRoute();
 const router = useRouter();
@@ -28,7 +28,7 @@ async function handleLogout() {
   <div class="layout-shell">
     <aside class="sidebar">
       <div class="brand">
-        <img :src="logoUrl" alt="Text AIGC Reducer Logo" class="logo-image" />
+        <img :src="logoUrl" draggable="false"  alt="Text AIGC Reducer Logo" class="logo-image" />
         <div>
           <h1>TextOps Console</h1>
           <p>AIGC Reduction System</p>
@@ -53,7 +53,7 @@ async function handleLogout() {
         </el-menu-item>
         <el-menu-item index="/admin">
           <el-icon><Setting /></el-icon>
-          <span>管理中心</span>
+          <span>配置中心</span>
         </el-menu-item>
       </el-menu>
 
@@ -90,7 +90,8 @@ async function handleLogout() {
   display: grid;
   grid-template-columns: 236px 1fr;
   gap: 0;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -196,6 +197,7 @@ async function handleLogout() {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .workspace-topbar {

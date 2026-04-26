@@ -17,16 +17,6 @@ class LLMRewriter:
         self._chat_model = None
         self._chat_model_key: tuple[str, str, int, int] | None = None
 
-    def resolve_llm_mode(self, runtime_settings: RuntimeSettingsOut) -> str:
-        return "mock" if self.should_use_mock_llm(runtime_settings) else "real"
-
-    def should_use_mock_llm(self, runtime_settings: RuntimeSettingsOut) -> bool:
-        value = runtime_settings.use_mock_llm.strip().lower()
-        if value == "true":
-            return True
-        if value == "false":
-            return False
-        return not bool(self.settings.openai_api_key.strip())
 
     async def rewrite(
         self,
@@ -38,9 +28,6 @@ class LLMRewriter:
         round_index: int,
     ) -> str:
         chat_model = self._get_chat_model(runtime_settings)
-        if chat_model is None:
-            return self._mock_rewrite(original_text, previous_text, round_index)
-
         candidate = await self._call_model(
             chat_model=chat_model,
             rewrite_prompt=rewrite_prompt,
@@ -99,10 +86,7 @@ class LLMRewriter:
         )
         return str(result.content)
 
-    def _get_chat_model(self, runtime_settings: RuntimeSettingsOut) -> ChatOpenAI | None:
-        if self.should_use_mock_llm(runtime_settings):
-            return None
-
+    def _get_chat_model(self, runtime_settings: RuntimeSettingsOut) -> ChatOpenAI:
         config_key = (
             runtime_settings.openai_model,
             runtime_settings.openai_base_url,
@@ -132,25 +116,4 @@ class LLMRewriter:
         similarity = difflib.SequenceMatcher(None, clean_source, clean_candidate).ratio()
         return similarity > 0.92
 
-    def _mock_rewrite(self, original_text: str, previous_text: str, round_index: int) -> str:
-        source = previous_text if round_index > 1 else original_text
-        replacements = [
-            ("首先", "先说"),
-            ("因此", "所以"),
-            ("此外", "另外"),
-            ("总之", "整体来看"),
-            ("非常", "相当"),
-            ("可以看出", "能够看到"),
-        ]
-        rewritten = source
-        random.shuffle(replacements)
-        for old, new in replacements[:3]:
-            rewritten = rewritten.replace(old, new)
 
-        # Make fallback rewrite visibly different instead of just appending one sentence.
-        rewritten = rewritten.replace("，", "，并且")
-        rewritten = rewritten.replace("。", "。同时，")
-        rewritten = rewritten.replace("此外", "另外")
-        rewritten = rewritten.replace("有效改善", "明显改善")
-        rewritten = rewritten.replace("提升了", "进一步提升了")
-        return rewritten.rstrip("，并且").rstrip("同时，")

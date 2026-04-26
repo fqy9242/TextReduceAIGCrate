@@ -20,11 +20,12 @@ class SystemSettingsService:
             default_target_score=self.settings.default_target_score,
             default_max_rounds=self.settings.default_max_rounds,
             default_style=self.settings.default_style,
-            use_mock_llm=self._normalize_mock_mode(self.settings.use_mock_llm),
             openai_base_url=self.settings.openai_base_url,
             openai_model=self.settings.openai_model,
             openai_timeout_seconds=self.settings.openai_timeout_seconds,
             openai_max_retries=max(0, self.settings.openai_max_retries),
+            detector_model=self.settings.openai_model,
+            detector_prompt="你是一个专业的AI文本痕迹检测器。请评估给定文本由AI生成的概率(0-100)。\n请仔细分析文本的结构、重复性、生硬的转折、过于规律的句式等AI常见痕迹。\n返回JSON格式数据，必须包含两个字段：\n1. 'score' (0-100的浮点数，数值越高代表越像AI生成)\n2. 'label' (字符串，可选值为 'ai_like', 'human_like', 'uncertain'。score>45为ai_like，score<25为human_like，其余为uncertain)\n3. 'reason' (字符串，简要说明判断理由)",
         )
 
     async def ensure_initialized(self, session: AsyncSession) -> None:
@@ -56,7 +57,6 @@ class SystemSettingsService:
                 "default_style": default_style,
                 "available_styles": available_styles,
                 "has_openai_api_key": bool(self.settings.openai_api_key.strip()),
-                "effective_llm_mode": self.resolve_llm_mode(values),
             }
         )
 
@@ -84,20 +84,8 @@ class SystemSettingsService:
                 **payload.model_dump(),
                 "available_styles": available_styles,
                 "has_openai_api_key": bool(self.settings.openai_api_key.strip()),
-                "effective_llm_mode": self.resolve_llm_mode(payload),
             }
         )
-
-    def resolve_llm_mode(self, values: RuntimeSettingsUpdateRequest | RuntimeSettingsOut) -> str:
-        return "mock" if self.should_use_mock_llm(values) else "real"
-
-    def should_use_mock_llm(self, values: RuntimeSettingsUpdateRequest | RuntimeSettingsOut) -> bool:
-        mode = values.use_mock_llm.strip().lower()
-        if mode == "true":
-            return True
-        if mode == "false":
-            return False
-        return not bool(self.settings.openai_api_key.strip())
 
     def _merge_payload(self, payload: object) -> RuntimeSettingsUpdateRequest:
         defaults = self.build_default_values().model_dump()
@@ -125,11 +113,3 @@ class SystemSettingsService:
             return self.settings.default_style
         return available_styles[0]
 
-    @staticmethod
-    def _normalize_mock_mode(value: str) -> str:
-        normalized = value.strip().lower()
-        if normalized in {"1", "true", "yes", "on", "mock"}:
-            return "true"
-        if normalized in {"0", "false", "no", "off", "real"}:
-            return "false"
-        return "auto"

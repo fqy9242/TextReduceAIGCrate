@@ -27,7 +27,6 @@ async def test_runtime_settings_can_be_read_and_updated(client) -> None:
             "default_target_score": 18,
             "default_max_rounds": 4,
             "default_style": "deai_external",
-            "use_mock_llm": "true",
             "openai_base_url": "https://example.com/v1",
             "openai_model": "demo-model",
             "openai_timeout_seconds": 120,
@@ -39,12 +38,10 @@ async def test_runtime_settings_can_be_read_and_updated(client) -> None:
     updated = update_resp.json()
     assert updated["default_target_score"] == 18
     assert updated["default_max_rounds"] == 4
-    assert updated["use_mock_llm"] == "true"
     assert updated["openai_base_url"] == "https://example.com/v1"
     assert updated["openai_model"] == "demo-model"
     assert updated["openai_timeout_seconds"] == 120
     assert updated["openai_max_retries"] == 2
-    assert updated["effective_llm_mode"] == "mock"
 
     reload_resp = await client.get("/api/v1/system-settings/runtime", headers=admin_headers)
     assert reload_resp.status_code == 200, reload_resp.text
@@ -72,8 +69,7 @@ async def test_runtime_settings_drive_task_defaults(client) -> None:
             "default_target_score": 12,
             "default_max_rounds": 5,
             "default_style": "deai_external",
-            "use_mock_llm": "true",
-            "openai_base_url": "https://api.openai.com/v1",
+            "openai_base_url": "https://example.com/v1",
             "openai_model": "gpt-4o-mini",
             "openai_timeout_seconds": 90,
             "openai_max_retries": 1,

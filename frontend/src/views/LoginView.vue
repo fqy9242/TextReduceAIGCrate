@@ -131,7 +131,7 @@ async function onSubmit() {
           </el-form>
 
           <div class="form-footer">
-            企业内部系统，请勿向无权限人员泄露账号信息。
+            学习测试使用,请勿用于非法用途!
           </div>
         </div>
       </section>

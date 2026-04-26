@@ -46,8 +46,8 @@ class PromptManager:
 
             if not group or not name or not version:
                 raise ValueError(f"Invalid prompt header in {file_path}")
-            if group == "rewrite" and (not system or not human):
-                raise ValueError(f"Rewrite prompt must contain system + human in {file_path}")
+            if group in {"rewrite", "detector"} and (not system or not human):
+                raise ValueError(f"{group} prompt must contain system + human in {file_path}")
 
             spec = PromptSpec(
                 group=group,
@@ -106,9 +106,9 @@ class PromptManager:
             "variables": cleaned_variables,
         }
 
-        if group == "rewrite":
+        if group in {"rewrite", "detector"}:
             if not cleaned_system or not cleaned_human:
-                raise ValueError("Rewrite prompt requires non-empty system and human")
+                raise ValueError(f"{group} prompt requires non-empty system and human")
             updated["system"] = cleaned_system
             updated["human"] = cleaned_human
             if cleaned_instruction:

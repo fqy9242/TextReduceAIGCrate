@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +25,7 @@ async def add_task_log(
             stage=stage[:32],
             message=message[:4000],
             detail=detail or {},
+            created_at=datetime.now(timezone.utc),
         )
     )
     if commit:
